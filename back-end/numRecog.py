@@ -30,7 +30,7 @@ def trim_borders(image):
 def save_image(image, name):
     image = trim_borders(image)
     image = replace_transparent_background(image)
-    image = image.resize((imgHeight, imgWidth))
+#    image = image.resize((imgHeight, imgWidth))
     image.save(name)
     
 def dfs(arr, tempArr, i, j, width, height):
@@ -66,7 +66,7 @@ def solveImage():
         img = Image.open("received_image.png") 
     except IOError:
         pass    
-    img1 = img.resize((50, 50))
+    img1 = img.resize((100, 100))
     img1.save("resized.png")
     find_number(img1)
     print(count)
