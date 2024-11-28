@@ -7,6 +7,8 @@ const HandwritingApp = () => {
   const contextRef = useRef(null);
   const [isDraw, setIsDraw] = useState(false);
   const [output, setOutput] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+
   useEffect(() => {
     const canvas = canvasRef.current;
     canvas.width = 600;
@@ -43,13 +45,18 @@ const HandwritingApp = () => {
   };
 
   const sendImage = () => {
+    setIsLoading(true);
     const canvas = canvasRef.current;
     const imageData = canvas.toDataURL("image/png");
     axios
       .post("/upload", { image: imageData })
-      .then((res) => setOutput(res.data))
+      .then((res) => {
+        setOutput(res.data);
+        setIsLoading(false);
+      })
       .catch((error) => {
         console.error("Error sending image:", error);
+        setIsLoading(false);
       });
   };
 
@@ -113,7 +120,15 @@ const HandwritingApp = () => {
         Send Image
       </button>
 
-      <h3>B đã vẽ {output} số</h3>
+      <h3>
+        {isLoading ? (
+          <span>Đang xử lý...</span>
+        ) : output.length > 0 ? (
+          <span>Bạn đã vẽ các số: {output}</span>
+        ) : (
+          <span>Hãy vẽ</span>
+        )}
+      </h3>
     </div>
   );
 };
