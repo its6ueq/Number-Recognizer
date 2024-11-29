@@ -6,7 +6,8 @@ from pydantic import BaseModel
 from io import BytesIO
 from PIL import Image
 from fastapi.middleware.cors import CORSMiddleware
-from dataProc import solveImage
+
+from imgProc import solveImage
 
 app = FastAPI()
 

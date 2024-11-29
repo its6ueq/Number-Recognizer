@@ -1,12 +1,13 @@
 import pickle 
 import numpy as np
 from PIL import Image
-import os
+
 
 def imgToArray(img, channel):
   img_array = np.array(img)
   channel_index = {'R': 0, 'G': 1, 'B': 2, 'A': 3}[channel]
   channel_array = img_array[:, :, channel_index]
+#   print(channel_array.flatten().reshape(1, -1))
   return channel_array.flatten().reshape(1, -1)
 
 def numberRecognizer():
@@ -28,3 +29,4 @@ def numberRecognizer():
         
     return s
 
+numberRecognizer()
