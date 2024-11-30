@@ -121,5 +121,3 @@ def solveImage():
 
 def pad_image(image):
     return ImageOps.expand(image, border=30, fill='#fff')
-
-solveImage()

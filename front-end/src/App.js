@@ -17,7 +17,7 @@ const HandwritingApp = () => {
     const context = canvas.getContext("2d");
     context.lineCap = "round";
     context.strokeStyle = "black";
-    context.lineWidth = 5;
+    context.lineWidth = 10;
     contextRef.current = context;
   }, []);
 
