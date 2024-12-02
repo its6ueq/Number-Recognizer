@@ -117,7 +117,7 @@ def solveImage():
     print("Đã xóa những file ảnh cũ")
     dfs_stack(img)
     print("Phân tách ảnh thành công")
-    print("Đã phát hiện " + str(count) + " số, đang xử lí")
+    print("Đã phát hiện " + str(count) + " kí tự, đang xử lí")
     result_str = numberRecognizer()  
     print(result_str)
     return calcu(result_str)    

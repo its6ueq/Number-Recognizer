@@ -6,17 +6,17 @@ def calcu(s):
     temp = 0
     neg = 1
     for i in range(len(arr)):
-        if(arr[i] == 11):
+        if(arr[i] == 12):
             print(" + ", end = "")
-        elif(arr[i] == 12):
+        elif(arr[i] == 11):
             print(" - ", end = "")
         else:
             print(arr[i], end = "")
-        if arr[i] == 11:
+        if arr[i] == 12:
             summ = summ + neg * temp
             neg = 1
             temp = 0
-        elif arr[i] == 12:
+        elif arr[i] == 11:
             summ = summ + neg * temp
             neg = -1
             temp = 0

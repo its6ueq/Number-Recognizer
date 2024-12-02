@@ -117,10 +117,10 @@ const HandwritingApp = () => {
           cursor: "pointer",
         }}
       >
-        Send Image
+        Calculate
       </button>
 
-      <h3>
+      <h1>
         {isLoading ? (
           <span>Đang xử lý...</span>
         ) : Array.isArray(output) || output.length > 0 ? (
@@ -128,7 +128,7 @@ const HandwritingApp = () => {
         ) : (
           <span>Hãy vẽ</span>
         )}
-      </h3>
+      </h1>
     </div>
   );
 };
