@@ -1,14 +1,26 @@
 import pandas as pd
+import numpy as np
 import pickle 
+from PIL import Image, ImageChops, ImageOps
 
 from sklearn.neighbors import KNeighborsClassifier
 
-mnist_train = pd.read_csv("dataTrain.csv", index_col=[0])
+def imgToArray(img, channel):
+  img_array = np.array(img)
+  channel_index = {'R': 0, 'G': 1, 'B': 2, 'A': 3}[channel]
+  channel_array = img_array[:, :, channel_index]
+#   print(channel_array.flatten().reshape(1, -1))
+  return channel_array.flatten().reshape(1, -1)
+
+
+mnist_train = pd.read_csv("symbolTrain.csv", index_col=[0])
 mnist_test = pd.read_csv("dataTest.csv", index_col=[0])
 
 y_train = mnist_train["label"].copy().to_numpy()
 X_train = mnist_train.drop(columns=["label"]).to_numpy()
-
+print(np.delete(X_train, [0], 1))
+X_train = np.delete(X_train, [0], 1)
+print(X_train.dtype.names)
 y_test = mnist_test["label"].copy().to_numpy()
 X_test = mnist_test.drop(columns=["label"]).to_numpy()
 
@@ -22,6 +34,17 @@ knnPickle = open('knnpickle_file', 'wb')
 pickle.dump(knn, knnPickle)  
 
 knnPickle.close()
+
+try: 
+    img = Image.open("1.png") 
+except IOError:
+    pass    
+
+arrayImage = imgToArray(img, 'A')
+print(arrayImage)
+result = knn.predict(arrayImage) 
+print(result)
+
 
 
 # from sklearn.model_selection import cross_val_predict

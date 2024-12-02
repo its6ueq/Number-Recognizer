@@ -123,8 +123,8 @@ const HandwritingApp = () => {
       <h3>
         {isLoading ? (
           <span>Đang xử lý...</span>
-        ) : output.length > 0 ? (
-          <span>Bạn đã vẽ các số: {output}</span>
+        ) : Array.isArray(output) || output.length > 0 ? (
+          <span>Kết quả của phép tính là: {output}</span>
         ) : (
           <span>Hãy vẽ</span>
         )}

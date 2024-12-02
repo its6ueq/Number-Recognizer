@@ -1,5 +1,6 @@
 import pickle 
 import numpy as np
+
 from PIL import Image
 
 
@@ -20,13 +21,20 @@ def numberRecognizer():
             img = Image.open(str(count) + ".png") 
         except IOError:
             break
-        print("Imported " + str(count) + ".png")
+        print("Đang xử lí " + str(count) + ".png")
         arrayImage = imgToArray(img, 'A')
+        # print(arrayImage)
         result = loaded_model.predict(arrayImage) 
-        print(result)
+        print("Đã nhận dạng được ", end = "")
+        if(result == 11):
+            print("dấu + ", end = "")
+        elif(result == 12):
+            print("dấu - ", end = "")
+        else:
+            print("số ", str(result))
         s = s + ' ' + str(result[0])
+        
         # os.remove(str(count) + ".png") 
         
     return s
 
-numberRecognizer()

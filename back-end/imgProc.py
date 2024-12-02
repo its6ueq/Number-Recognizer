@@ -5,6 +5,7 @@ import os
 
 from PIL import Image, ImageChops, ImageOps
 from numRecog import numberRecognizer
+from cal import calcu
 
 imgHeight = 50
 imgWidth = 50
@@ -32,8 +33,6 @@ def trim_borders(image):
     return image
 
 
-#1 code tiep
-#2 des
 def save_image(image, name):
     image = trim_borders(image)
     image = make_square(image)
@@ -83,8 +82,8 @@ def dfs_stack(img):
     height = img.height
     stack = [] 
     arr = np.asarray(img).copy()
-    for i in range(height):
-        for j in range(width):
+    for j in range(width):
+        for i in range(height):
             if (arr[i, j, 3] != 0):
                 stack.append((i, j))
                 count += 1
@@ -109,15 +108,20 @@ def solveImage():
     count = 0
     try: 
         img = Image.open("received_image.png") 
+        print("Đã mở ảnh thành công")
     except IOError:
         pass    
     removing_files = glob.glob('*.png')
     for i in removing_files:
         os.remove(i)
-        
+    print("Đã xóa những file ảnh cũ")
     dfs_stack(img)
+    print("Phân tách ảnh thành công")
     print("Đã phát hiện " + str(count) + " số, đang xử lí")
-    return numberRecognizer()
+    result_str = numberRecognizer()  
+    print(result_str)
+    return calcu(result_str)    
 
-def pad_image(image):
+
+def pad_image(image, ):
     return ImageOps.expand(image, border=30, fill='#fff')

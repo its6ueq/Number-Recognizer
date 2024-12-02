@@ -8,6 +8,9 @@ from PIL import Image
 from fastapi.middleware.cors import CORSMiddleware
 
 from imgProc import solveImage
+import numRecog
+import cal
+
 
 app = FastAPI()
 

@@ -66,6 +66,14 @@ df = pd.DataFrame(trainingData)
 
 renamedTrainData = pd.DataFrame(data=df.values, columns=mnist_train.columns)
 renamedTrainData.to_csv("dataTrain.csv")
+
+
+minus = pd.read_csv("minus.csv")
+plus = pd.read_csv("plus.csv")
+final = pd.concat((renamedTrainData, minus))
+final = pd.concat((final, plus))
+final.to_csv("symbolTrain.csv")
+
 for i in range (np.shape(X_test)[0]):
     solveLine(i)
 
