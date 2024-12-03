@@ -1,4 +1,3 @@
-
 import numpy as np
 import glob
 import os
@@ -6,6 +5,7 @@ import os
 from PIL import Image, ImageChops, ImageOps
 from numRecog import numberRecognizer
 from cal import calcu
+from typing import List, Tuple
 
 imgHeight = 50
 imgWidth = 50
@@ -77,7 +77,6 @@ def make_square(image, min_size=28, fill_color=(0, 0, 0, 0)):
 #                 save_image(data, str(count) + ".png")
                 
 def dfs_stack(img):
-    global count
     width = img.width
     height = img.height
     stack = [] 
@@ -86,7 +85,6 @@ def dfs_stack(img):
         for i in range(height):
             if (arr[i, j, 3] != 0):
                 stack.append((i, j))
-                count += 1
                 tempArr = np.zeros((height,width, 4), dtype = np.uint8)
                 while stack:
                     x, y = stack.pop() 
@@ -100,12 +98,66 @@ def dfs_stack(img):
                             stack.append((newX, newY))
                             tempArr[newX, newY, 3] = arr[newX, newY, 3]
                             arr[newX, newY, 3] = 0
-                data = Image.fromarray(tempArr, mode = "RGBA")
-                save_image(data, str(count) + ".png")
+
+                component.append(tempArr)
+                # data = Image.fromarray(tempArr, mode = "RGBA")
+                # save_image(data, str(count) + ".png")
+
+def inside(a, y1, y2): 
+    return a >= y1 and a <= y2
+
+def add_row(row):
+    row = sorted(row, key=lambda x: x[-4])
+    global count
+    for i in row:
+        count += 1
+        data = Image.fromarray(i[0], mode = "RGBA")
+        save_image(data, str(count) + ".png")
+
+def sort_component(size = 600):
+
+    lst = []
+    for com in component:
+        w = 0
+        x = 0
+        y = 0
+        minY = 1000
+        maxY = 0
+        for i in range(size):
+            for j in range(size):
+                if com[i, j, 3] > 0:
+                    w += com[i, j, 3]
+                    x += com[i, j, 3] * j
+                    y += com[i, j, 3] * i
+                    minY = min(minY, i)
+                    maxY = max(maxY, i)
+
+        x //= w
+        y //= w
+        lst.append([com, x, y, minY, maxY])
+    lst = sorted(lst, key=lambda x: x[-3])
+    
+    global count
+    row = []
+    for i in lst:
+        check = False
+        for j in row:
+            if inside(i[-3], j[-2], j[-1]) or inside(j[-3], i[-2], i[-1]):
+                check = True
+
+        if check == False:
+            add_row(row)
+            row = []
+
+        row.append(i)
+
+    add_row(row)
 
 def solveImage():
     global count
     count = 0
+    global component
+    component = []
     try: 
         img = Image.open("received_image.png") 
         print("Đã mở ảnh thành công")
@@ -113,9 +165,16 @@ def solveImage():
         pass    
     removing_files = glob.glob('*.png')
     for i in removing_files:
-        os.remove(i)
+        if i != "received_image.png":
+            try: 
+                os.remove(i)
+            except OSError as e:
+                print("Failed with:", e.strerror) 
+                print ("Error code:", e.code)
+
     print("Đã xóa những file ảnh cũ")
     dfs_stack(img)
+    sort_component()
     print("Phân tách ảnh thành công")
     print("Đã phát hiện " + str(count) + " kí tự, đang xử lí")
     result_str = numberRecognizer()  
