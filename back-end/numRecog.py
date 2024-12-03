@@ -27,9 +27,9 @@ def numberRecognizer():
         result = loaded_model.predict(arrayImage) 
         print("Đã nhận dạng được ", end = "")
         if(result == 11):
-            print("dấu + ", end = "")
-        elif(result == 12):
             print("dấu - ", end = "")
+        elif(result == 12):
+            print("dấu + ", end = "")
         else:
             print("số ", str(result))
         s = s + ' ' + str(result[0])
