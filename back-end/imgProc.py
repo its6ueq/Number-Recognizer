@@ -75,7 +75,7 @@ def dfs_stack(img):
                 arr[i, j, 3] = 0
                 while stack:
                     x, y = stack.pop() 
-                    w += tempArr[x, y, 3]
+                    w += int(tempArr[x, y, 3])
                     centerX += x * int(tempArr[x, y, 3]) 
                     centerY += y * int(tempArr[x, y, 3]) 
                     minX = min(minX, x)
