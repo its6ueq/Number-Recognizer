@@ -5,11 +5,13 @@ import os
 from PIL import Image, ImageChops, ImageOps, ImageFilter
 from numRecog import numberRecognizer
 from cal import calcu
+from sklearn.cluster import KMeans
 
 imgHeight = 50
 imgWidth = 50
 trans = (0, 0, 0, 0)
 count = 0
+diviList = []
 
 def replace_transparent_background(image):
     image_arr = np.array(image)
@@ -33,6 +35,8 @@ def trim_borders(image):
 
 def save_image(image, name):
     image = trim_borders(image)
+    width, height = image.size
+    print("Size: ", str(width), str(height))
     image = make_square(image)
     # image = average_filter(image)
     image = image.resize((28, 28))
@@ -61,6 +65,7 @@ def dfs_stack(img):
     arr = np.asarray(img).copy()
     global lst
     global component
+    global diviList
     for i in range(height):
         for j in range(width):
             if (arr[i, j, 3] != 0):
@@ -69,6 +74,9 @@ def dfs_stack(img):
                 centerY = 0
                 minX = 1000
                 maxX = 0
+                
+                minY = 1000
+                maxY = 0
                 stack.append((i, j))
                 tempArr = np.zeros((height,width, 4), dtype = np.uint8)
                 tempArr[i, j, 3] = arr[i, j, 3]
@@ -81,6 +89,9 @@ def dfs_stack(img):
                     minX = min(minX, x)
                     maxX = max(maxX, x)
                     
+                    minY = min(minY, y)
+                    maxY = max(maxY, y)
+                    
                     d = [-1, 0, 1, 0, -1]
                     for k in range (0, 4):
                         newX = x + d[k]
@@ -92,12 +103,64 @@ def dfs_stack(img):
 
                 centerX //= w
                 centerY //= w
+
                 lst.append([id, centerX, centerY, minX, maxX])
+                # print(id, centerX, centerY, minX, maxX)
+                if (maxY - minY < 30) and (maxX - minX < 30): 
+                    print("new divi")
+                    print(id, centerX, centerY, minX, maxX)
+                    diviList.append([id, centerX, centerY, minX, maxX])
+                
                 id += 1
                 component.append(tempArr)
 
 def inside(a, x1, x2): 
     return a >= x1 and a <= x2
+    
+def cluster_dividers(diviList):
+  coordinates = np.array([[x[1], x[2]] for x in diviList])
+
+  n_clusters = len(diviList) // 2  
+
+  kmeans = KMeans(n_clusters=n_clusters, random_state=42)
+  kmeans.fit(coordinates)
+
+  labels = kmeans.labels_
+
+  newDiviList = []
+  for i in range(n_clusters):
+    cluster_points = [diviList[j] for j in range(len(diviList)) if labels[j] == i]
+    print("cluster: ", str(i))
+    for p in cluster_points:
+        print(p[0] )
+    newId = min(p[0] for p in cluster_points)
+    newCenterX = np.mean([p[1] for p in cluster_points])
+    newCenterY = np.mean([p[2] for p in cluster_points])
+    newMinX = min(p[3] for p in cluster_points)
+    newMaxX = max(p[4] for p in cluster_points)
+
+    newDiviList.append([newId, newCenterX, newCenterY, newMinX, newMaxX])
+
+  return newDiviList
+
+def replaceDivi(newDiviList):
+    global diviList
+    global lst
+    print("pr")
+    for i in lst:
+        print(i[0])
+    print("rep")
+    for i in range (len(diviList) - 1, -1, -1):
+        lst.pop(diviList[i][0])  
+
+    
+    for i in newDiviList:
+        lst.append(i)
+    print("pr")
+    for i in lst:
+        print(i[0])
+        
+    
 
 def add_row(row):
     row = sorted(row, key=lambda x: x[2])
@@ -151,6 +214,14 @@ def solveImage():
 
     print("Đã xóa những file ảnh cũ")
     dfs_stack(img)
+    
+
+    
+    global diviList
+    newDiviList = cluster_dividers(diviList)
+
+    replaceDivi(newDiviList)
+    
     sort_component()
     print("Phân tách ảnh thành công")
     print("Đã phát hiện " + str(count) + " kí tự, đang xử lí")
@@ -161,3 +232,5 @@ def solveImage():
 
 def pad_image(image, ):
     return ImageOps.expand(image, border=30, fill='#fff')
+
+solveImage()
