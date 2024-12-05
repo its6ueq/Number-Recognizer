@@ -2,15 +2,19 @@ import numpy as np
 import glob
 import os
 
-from PIL import Image, ImageChops, ImageOps
+from PIL import Image, ImageChops, ImageOps, ImageFilter
 from numRecog import numberRecognizer
 from cal import calcu
-from typing import List, Tuple
+
+from sklearn.cluster import KMeans
+
+
 
 imgHeight = 50
 imgWidth = 50
 trans = (0, 0, 0, 0)
 count = 0
+diviList = []
 
 def replace_transparent_background(image):
     image_arr = np.array(image)
@@ -32,64 +36,65 @@ def trim_borders(image):
         return image.crop(bbox)
     return image
 
-
 def save_image(image, name):
     image = trim_borders(image)
+    width, height = image.size
+    print("Size: ", str(width), str(height))
     image = make_square(image)
-    # image = replace_transparent_background(image)
-    # image = image.convert('L')
-    # image = ImageOps.invert(image)
+    image = average_filter(image)
     image = image.resize((28, 28))
     image.save(name)
     
-def make_square(image, min_size=28, fill_color=(0, 0, 0, 0)):
+def make_square(image, fill_color=(0, 0, 0, 0)):
     x, y = image.size
-    size = max(min_size, x, y)
+    size = max(x, y)
     newImage = Image.new('RGBA', (size, size), fill_color)
 
     newImage.paste(image, (int((size - x) / 2), int((size - y) / 2)))
-    # newImage = ImageOps.expand(image, border=int(size/6), fill='#fff') 
     return newImage
+
+def average_filter(image):
+    kernel = [1/9] * 9 
+    size = (3, 3)     
     
-# def dfs1(arr, tempArr, i, j, width, height):
-#     global count
-#     if (i < 0 or j < 0 or i >= height or j >= width or arr[i, j, 3] == 0):
-#         return 
-#     tempArr[i, j, 3] = arr[i, j, 3]
-#     arr[i, j, 3] = 0
-#     dfs(arr, tempArr, i + 1, j, width, height)
-#     dfs(arr, tempArr, i - 1, j, width, height)
-#     dfs(arr, tempArr, i, j + 1, width, height)
-#     dfs(arr, tempArr, i, j - 1, width, height)
-    
-# def find_number(img):
-#     global count
-#     width = img.width
-#     height = img.height
-#     arr = np.asarray(img).copy()
-#     for i in range(height):
-#         for j in range(width):
-#             if (arr[i, j, 3] != 0):
-#                 count += 1
-#                 tempArr = np.zeros((height,width, 4), dtype = np.uint8)
-#                 dfs(arr, tempArr, i, j, width, height)
-#                 data = Image.fromarray(tempArr, mode = "RGBA")
-#                 save_image(data, str(count) + ".png")
+    filtered_image = image.filter(ImageFilter.Kernel(size, kernel, scale=None))
+    return filtered_image
                 
 def dfs_stack(img):
     width = img.width
     height = img.height
     stack = [] 
+    id = 0
     arr = np.asarray(img).copy()
-    for j in range(width):
-        for i in range(height):
+    global lst
+    global component
+    global diviList
+    for i in range(height):
+        for j in range(width):
             if (arr[i, j, 3] != 0):
+                w = 0
+                centerX = 0
+                centerY = 0
+                minX = 1000
+                maxX = 0
+                
+                minY = 1000
+                maxY = 0
                 stack.append((i, j))
                 tempArr = np.zeros((height,width, 4), dtype = np.uint8)
+                tempArr[i, j, 3] = arr[i, j, 3]
+                arr[i, j, 3] = 0
                 while stack:
                     x, y = stack.pop() 
+                    w += int(tempArr[x, y, 3])
+                    centerX += x * int(tempArr[x, y, 3]) 
+                    centerY += y * int(tempArr[x, y, 3]) 
+                    minX = min(minX, x)
+                    maxX = max(maxX, x)
                     
-                    # time.sleep(5)
+                    minY = min(minY, y)
+                    maxY = max(maxY, y)
+                    
                     d = [-1, 0, 1, 0, -1]
                     for k in range (0, 4):
                         newX = x + d[k]
@@ -99,50 +104,76 @@ def dfs_stack(img):
                             tempArr[newX, newY, 3] = arr[newX, newY, 3]
                             arr[newX, newY, 3] = 0
 
+                centerX //= w
+                centerY //= w
+
+                lst.append([id, centerX, centerY, minX, maxX])
+                # print(id, centerX, centerY, minX, maxX)
+                if (maxY - minY < 30) and (maxX - minX < 30): 
+                    for x in range(height):
+                        for y in range(width):
+                            tempArr[x, y, 3] = 255
+                    diviList.append([id, centerX, centerY, minX, maxX])
+                
+                id += 1
                 component.append(tempArr)
-                # data = Image.fromarray(tempArr, mode = "RGBA")
-                # save_image(data, str(count) + ".png")
 
-def inside(a, y1, y2): 
-    return a >= y1 and a <= y2
+def inside(a, x1, x2): 
+    return a >= x1 and a <= x2
+    
+def cluster_dividers(diviList):
+  coordinates = np.array([[x[1], x[2]] for x in diviList])
 
+  n_clusters = len(diviList) // 2 
+  print(len(diviList))
+
+  kmeans = KMeans(n_clusters=n_clusters, random_state=42)
+  kmeans.fit(coordinates)
+
+  labels = kmeans.labels_
+
+  newDiviList = []
+  for i in range(n_clusters):
+    cluster_points = [diviList[j] for j in range(len(diviList)) if labels[j] == i]
+    newId = min(p[0] for p in cluster_points)
+    newCenterX = np.mean([p[1] for p in cluster_points])
+    newCenterY = np.mean([p[2] for p in cluster_points])
+    newMinX = min(p[3] for p in cluster_points)
+    newMaxX = max(p[4] for p in cluster_points)
+
+    newDiviList.append([newId, newCenterX, newCenterY, newMinX, newMaxX])
+
+  return newDiviList
+
+def replaceDivi(newDiviList):
+    global diviList
+    global lst
+    for i in range (len(diviList) - 1, -1, -1):
+        lst.pop(diviList[i][0])  
+
+    for i in newDiviList:
+        lst.append(i)
+    
 def add_row(row):
-    row = sorted(row, key=lambda x: x[-4])
+    row = sorted(row, key=lambda x: x[2])
     global count
     for i in row:
         count += 1
-        data = Image.fromarray(i[0], mode = "RGBA")
+        data = Image.fromarray(component[i[0]], mode = "RGBA")
+
         save_image(data, str(count) + ".png")
 
 def sort_component(size = 600):
 
-    lst = []
-    for com in component:
-        w = 0
-        x = 0
-        y = 0
-        minY = 1000
-        maxY = 0
-        for i in range(size):
-            for j in range(size):
-                if com[i, j, 3] > 0:
-                    w += com[i, j, 3]
-                    x += com[i, j, 3] * j
-                    y += com[i, j, 3] * i
-                    minY = min(minY, i)
-                    maxY = max(maxY, i)
-
-        x //= w
-        y //= w
-        lst.append([com, x, y, minY, maxY])
-    lst = sorted(lst, key=lambda x: x[-3])
+    global lst
+    lst = sorted(lst, key=lambda x: x[1])
     
-    global count
     row = []
     for i in lst:
         check = False
         for j in row:
-            if inside(i[-3], j[-2], j[-1]) or inside(j[-3], i[-2], i[-1]):
+            if inside(i[1], j[3], j[4]) or inside(j[1], i[3], i[4]):
+
                 check = True
 
         if check == False:
@@ -154,10 +185,15 @@ def sort_component(size = 600):
     add_row(row)
 
 def solveImage():
+    global diviList
     global count
-    count = 0
     global component
+    global lst
+    diviList = []
+    count = 0
     component = []
+    lst = []
+
     try: 
         img = Image.open("received_image.png") 
         print("Đã mở ảnh thành công")
@@ -174,13 +210,18 @@ def solveImage():
 
     print("Đã xóa những file ảnh cũ")
     dfs_stack(img)
+
+    
+    if len(diviList) > 0:
+        newDiviList = cluster_dividers(diviList)
+        replaceDivi(newDiviList)
+    
     sort_component()
     print("Phân tách ảnh thành công")
     print("Đã phát hiện " + str(count) + " kí tự, đang xử lí")
     result_str = numberRecognizer()  
     print(result_str)
     return calcu(result_str)    
-
 
 def pad_image(image, ):
     return ImageOps.expand(image, border=30, fill='#fff')
