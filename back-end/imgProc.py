@@ -42,9 +42,9 @@ def save_image(image, name):
     image = image.resize((28, 28))
     image.save(name)
     
-def make_square(image, min_size=28, fill_color=(0, 0, 0, 0)):
+def make_square(image, fill_color=(0, 0, 0, 0)):
     x, y = image.size
-    size = max(min_size, x, y)
+    size = max(x, y)
     newImage = Image.new('RGBA', (size, size), fill_color)
 
     newImage.paste(image, (int((size - x) / 2), int((size - y) / 2)))
@@ -107,8 +107,9 @@ def dfs_stack(img):
                 lst.append([id, centerX, centerY, minX, maxX])
                 # print(id, centerX, centerY, minX, maxX)
                 if (maxY - minY < 30) and (maxX - minX < 30): 
-                    print("new divi")
-                    print(id, centerX, centerY, minX, maxX)
+                    for x in range(height):
+                        for y in range(width):
+                            tempArr[x, y, 3] = 255
                     diviList.append([id, centerX, centerY, minX, maxX])
                 
                 id += 1
@@ -120,7 +121,8 @@ def inside(a, x1, x2):
 def cluster_dividers(diviList):
   coordinates = np.array([[x[1], x[2]] for x in diviList])
 
-  n_clusters = len(diviList) // 2  
+  n_clusters = len(diviList) // 2 
+  print(len(diviList))
 
   kmeans = KMeans(n_clusters=n_clusters, random_state=42)
   kmeans.fit(coordinates)
@@ -130,9 +132,6 @@ def cluster_dividers(diviList):
   newDiviList = []
   for i in range(n_clusters):
     cluster_points = [diviList[j] for j in range(len(diviList)) if labels[j] == i]
-    print("cluster: ", str(i))
-    for p in cluster_points:
-        print(p[0] )
     newId = min(p[0] for p in cluster_points)
     newCenterX = np.mean([p[1] for p in cluster_points])
     newCenterY = np.mean([p[2] for p in cluster_points])
@@ -146,22 +145,12 @@ def cluster_dividers(diviList):
 def replaceDivi(newDiviList):
     global diviList
     global lst
-    print("pr")
-    for i in lst:
-        print(i[0])
-    print("rep")
     for i in range (len(diviList) - 1, -1, -1):
         lst.pop(diviList[i][0])  
 
-    
     for i in newDiviList:
         lst.append(i)
-    print("pr")
-    for i in lst:
-        print(i[0])
-        
     
-
 def add_row(row):
     row = sorted(row, key=lambda x: x[2])
     global count
@@ -169,7 +158,6 @@ def add_row(row):
         count += 1
         data = Image.fromarray(component[i[0]], mode = "RGBA")
         save_image(data, str(count) + ".png")
-    
 
 def sort_component(size = 600):
 
@@ -192,10 +180,12 @@ def sort_component(size = 600):
     add_row(row)
 
 def solveImage():
+    global diviList
     global count
-    count = 0
     global component
     global lst
+    diviList = []
+    count = 0
     component = []
     lst = []
     try: 
@@ -215,12 +205,9 @@ def solveImage():
     print("Đã xóa những file ảnh cũ")
     dfs_stack(img)
     
-
-    
-    global diviList
-    newDiviList = cluster_dividers(diviList)
-
-    replaceDivi(newDiviList)
+    if len(diviList) > 0:
+        newDiviList = cluster_dividers(diviList)
+        replaceDivi(newDiviList)
     
     sort_component()
     print("Phân tách ảnh thành công")
@@ -228,7 +215,6 @@ def solveImage():
     result_str = numberRecognizer()  
     print(result_str)
     return calcu(result_str)    
-
 
 def pad_image(image, ):
     return ImageOps.expand(image, border=30, fill='#fff')

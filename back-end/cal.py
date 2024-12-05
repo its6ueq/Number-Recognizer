@@ -50,7 +50,7 @@ def calcu(s):
         if arr[i] == 12:
             res -= arr[i + 1]
 
-
+    res = '{:g}'.format(res)
     
     print("\nResult = " + str(res))
     return str(res)
