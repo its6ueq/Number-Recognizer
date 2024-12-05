@@ -5,7 +5,10 @@ import os
 from PIL import Image, ImageChops, ImageOps, ImageFilter
 from numRecog import numberRecognizer
 from cal import calcu
+
 from sklearn.cluster import KMeans
+
+
 
 imgHeight = 50
 imgWidth = 50
@@ -157,6 +160,7 @@ def add_row(row):
     for i in row:
         count += 1
         data = Image.fromarray(component[i[0]], mode = "RGBA")
+
         save_image(data, str(count) + ".png")
 
 def sort_component(size = 600):
@@ -169,6 +173,7 @@ def sort_component(size = 600):
         check = False
         for j in row:
             if inside(i[1], j[3], j[4]) or inside(j[1], i[3], i[4]):
+
                 check = True
 
         if check == False:
@@ -188,6 +193,7 @@ def solveImage():
     count = 0
     component = []
     lst = []
+
     try: 
         img = Image.open("received_image.png") 
         print("Đã mở ảnh thành công")
@@ -204,6 +210,7 @@ def solveImage():
 
     print("Đã xóa những file ảnh cũ")
     dfs_stack(img)
+
     
     if len(diviList) > 0:
         newDiviList = cluster_dividers(diviList)
