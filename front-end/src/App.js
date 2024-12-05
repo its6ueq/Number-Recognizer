@@ -1,4 +1,5 @@
 import "./App.css";
+import "./index.css";
 import axios from "axios";
 import React, { useRef, useState, useEffect } from "react";
 
@@ -21,10 +22,24 @@ const HandwritingApp = () => {
     contextRef.current = context;
   }, []);
 
+  const [isErasing, setIsErasing] = useState(false);
+
   const startDraw = (e) => {
     contextRef.current.beginPath();
     contextRef.current.moveTo(e.nativeEvent.offsetX, e.nativeEvent.offsetY);
     setIsDraw(true);
+
+    if (isErasing) {
+      contextRef.current.globalCompositeOperation = "destination-out";
+      contextRef.current.lineWidth = 30;
+    } else {
+      contextRef.current.globalCompositeOperation = "source-over";
+      contextRef.current.lineWidth = 10;
+    }
+  };
+
+  const toggleErase = () => {
+    setIsErasing(!isErasing);
   };
 
   const finishDraw = () => {
@@ -83,10 +98,29 @@ const HandwritingApp = () => {
       />
 
       <button
-        onClick={clearCanvas}
+        onClick={toggleErase}
         style={{
           position: "absolute",
           top: "100px",
+          left: "1100px",
+          zIndex: 10,
+          padding: "15px 30px",
+          fontSize: "20px",
+          backgroundColor: "#6c767d",
+          color: "#FFF",
+          border: "none",
+          borderRadius: "5px",
+          cursor: "pointer",
+        }}
+      >
+        {isErasing ? "Vẽ" : "Tẩy"}
+      </button>
+
+      <button
+        onClick={clearCanvas}
+        style={{
+          position: "absolute",
+          top: "200px",
           left: "1100px",
           zIndex: 10,
           padding: "15px 30px",
@@ -105,7 +139,7 @@ const HandwritingApp = () => {
         onClick={sendImage}
         style={{
           position: "absolute",
-          top: "200px",
+          top: "300px",
           left: "1100px",
           zIndex: 10,
           padding: "15px 30px",

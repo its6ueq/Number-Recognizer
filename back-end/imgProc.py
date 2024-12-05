@@ -38,7 +38,7 @@ def save_image(image, name):
     width, height = image.size
     print("Size: ", str(width), str(height))
     image = make_square(image)
-    # image = average_filter(image)
+    image = average_filter(image)
     image = image.resize((28, 28))
     image.save(name)
     
@@ -218,5 +218,3 @@ def solveImage():
 
 def pad_image(image, ):
     return ImageOps.expand(image, border=30, fill='#fff')
-
-solveImage()
