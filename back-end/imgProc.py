@@ -2,10 +2,9 @@ import numpy as np
 import glob
 import os
 
-from PIL import Image, ImageChops, ImageOps
+from PIL import Image, ImageChops, ImageOps, ImageFilter
 from numRecog import numberRecognizer
 from cal import calcu
-from typing import List, Tuple
 
 imgHeight = 50
 imgWidth = 50
@@ -32,13 +31,10 @@ def trim_borders(image):
         return image.crop(bbox)
     return image
 
-
 def save_image(image, name):
     image = trim_borders(image)
     image = make_square(image)
-    # image = replace_transparent_background(image)
-    # image = image.convert('L')
-    # image = ImageOps.invert(image)
+    # image = average_filter(image)
     image = image.resize((28, 28))
     image.save(name)
     
@@ -48,33 +44,14 @@ def make_square(image, min_size=28, fill_color=(0, 0, 0, 0)):
     newImage = Image.new('RGBA', (size, size), fill_color)
 
     newImage.paste(image, (int((size - x) / 2), int((size - y) / 2)))
-    # newImage = ImageOps.expand(image, border=int(size/6), fill='#fff') 
     return newImage
+
+def average_filter(image):
+    kernel = [1/9] * 9 
+    size = (3, 3)     
     
-# def dfs1(arr, tempArr, i, j, width, height):
-#     global count
-#     if (i < 0 or j < 0 or i >= height or j >= width or arr[i, j, 3] == 0):
-#         return 
-#     tempArr[i, j, 3] = arr[i, j, 3]
-#     arr[i, j, 3] = 0
-#     dfs(arr, tempArr, i + 1, j, width, height)
-#     dfs(arr, tempArr, i - 1, j, width, height)
-#     dfs(arr, tempArr, i, j + 1, width, height)
-#     dfs(arr, tempArr, i, j - 1, width, height)
-    
-# def find_number(img):
-#     global count
-#     width = img.width
-#     height = img.height
-#     arr = np.asarray(img).copy()
-#     for i in range(height):
-#         for j in range(width):
-#             if (arr[i, j, 3] != 0):
-#                 count += 1
-#                 tempArr = np.zeros((height,width, 4), dtype = np.uint8)
-#                 dfs(arr, tempArr, i, j, width, height)
-#                 data = Image.fromarray(tempArr, mode = "RGBA")
-#                 save_image(data, str(count) + ".png")
+    filtered_image = image.filter(ImageFilter.Kernel(size, kernel, scale=None))
+    return filtered_image
                 
 def dfs_stack(img):
     width = img.width
@@ -99,12 +76,11 @@ def dfs_stack(img):
                 while stack:
                     x, y = stack.pop() 
                     w += tempArr[x, y, 3]
-                    centerX += tempArr[x, y, 3] * x
-                    centerY += tempArr[x, y, 3] * y
+                    centerX += x * int(tempArr[x, y, 3]) 
+                    centerY += y * int(tempArr[x, y, 3]) 
                     minX = min(minX, x)
                     maxX = max(maxX, x)
                     
-                    # time.sleep(5)
                     d = [-1, 0, 1, 0, -1]
                     for k in range (0, 4):
                         newX = x + d[k]
@@ -119,8 +95,6 @@ def dfs_stack(img):
                 lst.append([id, centerX, centerY, minX, maxX])
                 id += 1
                 component.append(tempArr)
-                # data = Image.fromarray(tempArr, mode = "RGBA")
-                # save_image(data, str(count) + ".png")
 
 def inside(a, x1, x2): 
     return a >= x1 and a <= x2
