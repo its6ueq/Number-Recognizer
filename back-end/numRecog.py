@@ -12,7 +12,7 @@ def imgToArray(img, channel):
   return channel_array.flatten().reshape(1, -1)
 
 def numberRecognizer():
-    loaded_model = pickle.load(open('knnpickle_file', 'rb'))
+    loaded_model = pickle.load(open('svmpickle_file', 'rb'))
     s = ''
     count = 0
     while(True):

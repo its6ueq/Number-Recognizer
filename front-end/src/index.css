@@ -68,35 +68,3 @@ body {
   background-position: bottom right;
   background-size: 150px; 
 }
-
-#erase-button {
-  position: relative; /* Để chứa pseudo-element ::before */
-}
-
-#erase-button::before {
-  content: ''; /* Ban đầu không hiển thị gì */
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0; /* Ẩn nội dung của ::before */
-  transition: opacity 0.3s ease; /* Thêm hiệu ứng transition */
-}
-
-#erase-button:hover::before {
-  opacity: 1; /* Hiển thị nội dung của ::before khi hover */
-}
-
-/* Khi đang ở chế độ "Tẩy" (isErasing = true) */
-#erase-button[data-state="erase"]:hover::before {
-  content: "Vẽ"; /* Hiển thị "Vẽ" khi hover */
-}
-
-/* Khi đang ở chế độ "Vẽ" (isErasing = false) */
-#erase-button[data-state="draw"]:hover::before {
-  content: "Tẩy"; /* Hiển thị "Tẩy" khi hover */
-}

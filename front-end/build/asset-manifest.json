@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/Number-Recognizer/static/css/main.61bccb2c.css",
+    "main.js": "/Number-Recognizer/static/js/main.173b19ef.js",
+    "static/js/453.b3949533.chunk.js": "/Number-Recognizer/static/js/453.b3949533.chunk.js",
+    "index.html": "/Number-Recognizer/index.html",
+    "main.61bccb2c.css.map": "/Number-Recognizer/static/css/main.61bccb2c.css.map",
+    "main.173b19ef.js.map": "/Number-Recognizer/static/js/main.173b19ef.js.map",
+    "453.b3949533.chunk.js.map": "/Number-Recognizer/static/js/453.b3949533.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.61bccb2c.css",
+    "static/js/main.173b19ef.js"
+  ]
+}
